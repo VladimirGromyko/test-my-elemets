@@ -16,7 +16,7 @@
 <script>
 
 
-import MySelect from "@/my-select";
+import MySelect from "@/components/my-select";
 
 export default {
   name: 'App',
