@@ -1,14 +1,14 @@
 <template>
-  <div > <p>
-    {{ selectedCar }}
-    </p>
-    <my-select
-        v-model="selectedCar"
-        :selectedCar="selectedCar"
-    />{{ selectedCar }}
-  </div>
-
-
+  <!--  <div > <p>-->
+  <!--    {{ selectedCar }}-->
+  <!--    </p>-->
+  <my-select
+      v-model="selectedName"
+      :firstSelect="selectedName"
+      :dataForSelect="finOperatAttitudeForAdded"
+  />
+  <!--  {{ selectedCar }}-->
+  <!--  </div>-->
 
 
 </template>
@@ -23,7 +23,11 @@ export default {
   components: {MySelect},
   data() {
     return {
-      selectedCar: "BMW"
+      finOperatAttitudeForAdded: [
+        "лицо, имеющее отношение к финансовой операции (является заявителем по заявлению о государственной регистрации)",
+        "представитель лица, имеющего отношение к финансовой операции (не является представителем заявителя согласно заявлению о государственной регистрации)",
+      ],
+      selectedName: "лицо, имеющее отношение к финансовой операции (является заявителем по заявлению о государственной регистрации)"
     }
   }
 }
@@ -38,7 +42,7 @@ export default {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
+  margin-top: 10px;
 }
 
 </style>
