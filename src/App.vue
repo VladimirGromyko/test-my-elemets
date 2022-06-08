@@ -1,13 +1,13 @@
 <template>
-  <div>
+  <div class="profileFormBlockFieldInput">
       <my-select
           v-model="selectedName"
-          :title="selectedName"
-          :dataForSelect="testArr"
+          :placeholder="selected"
+          :optionData="testArr"
           :disabled="false"
       />
     <br>
-      <div style="width: 300px">{{ selectedName }}</div>
+      <div>{{ selectedName }}</div>
 <!--    </div>-->
 
 <!--    <div class="my-class">выпадающие списки всегда отображаются вверху, единственное решение для этой проблемы - -->
@@ -35,12 +35,12 @@ export default {
         "лицо, имеющее отношение к финансовой операции (не является заявителем по заявлению о государственной регистрации)",
         "представитель лица, имеющего отношение к финансовой операции (не является представителем заявителя согласно заявлению о государственной регистрации)",
       ],
-      selectedName: "лицо, имеющее отношение к финансовой операции (является заявителем по заявлению о государственной регистрации)",
+      selectedName: '',
       finOperatAttitudeForAdded: [
         ['А', 'Бваимява feg fre f', 'В', 'Г gfsdf вап gfs вавп ыва цукц кцукацукц twergfewrfe ав вапваппу пва ', 'Д'],
         ['A', 'B вап пав sdffdsg ', 'C gsdfwer trwe rtew rewerew trety dhdrt rsgt крек куеенг кке кнег н frgs d g', 'D', 'E'],
       ],
-      selected: 'В',
+      selected: '',
       message: 'hello'
     }
   },
@@ -54,13 +54,22 @@ export default {
   /*font-family: Avenir, Helvetica, Arial, sans-serif;*/
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: center;
+  /*text-align: center;*/
   color: #2c3e50;
   margin-top: 10px;
 }
 
-.my-class {
-  z-index: 1;
+
+.profileFormBlockFieldInput {
+  display: inline-block;
+  width: 400px;
+  margin-left: 60px;
+}
+
+.my-select {
+  max-width: 390px;
+  /*height: 97px;*/
+  font-family: Avenir, Helvetica, Arial, sans-serif;
 }
 
 </style>

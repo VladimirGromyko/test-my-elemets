@@ -1,246 +1,194 @@
 <template>
-  <label>
-    <input
-        :value="modelValue"
-        @input="updateInput"
-        type="text"
-        style="display: none"
-    />
-
-    <div v-if="disabled"
-         class="dropdown-disabled">
-      <div class="choice"
-           tabindex="0"
-           ref="dropdown"
-           style="background-color: #F5F7FA">
-        <div class="choice-value">
-          {{ myChoice.value }}
-        </div>
-        <div class="choice-select">
-          <div class="arrow-down-disabled"></div>
-        </div>
-      </div>
+  <div class="wrapper">
+    <div class="dropdown"
+         :class="{ 'dropdown-disabled': disabled}"
+         tabindex="0"
+         ref="dropdown"
+         @click="toggleDropdown"
+         @blur="closeDropdown"
+    >
+      <span :class="viewPlaceholder">{{ choice.value }}</span>
+      <div class="arrow-up" :class="[{ 'arrow-down': isOpenSelect }]"/>
     </div>
-    <div v-else
-         class="dropdown">
-      <div class="choice"
-           @blur="closeDropdown"
-           tabindex="0"
-           ref="dropdown"
-           @click="toggleDropdown">
-        <div class="choice-value">
-          {{ myChoice.value }}
-        </div>
-        <div class="choice-select">
-          <div :class="arrowDirectionUp ? 'arrow-up' : 'arrow-down' "></div>
-        </div>
-      </div>
-
-      <div :class="isOpenSelect ? 'options-visible': 'options-hidden' ">
-        <div class="block-triangle">
-          <div class="select-options">
-            <div v-for="(option, index) in options"
-                 :key="option+index"
-                 @mousedown="selectOption(option, index)"
-                 :class="!option.selectedValue ? 'option': 'option-plus' ">
-              {{ option.value }}
-            </div>
+    <div class="options" :class="isOpenSelect ? 'options-visible': 'options-hidden' ">
+      <div class="block-triangle">
+        <div class="select-options">
+          <div v-for="(option, index) in options"
+               :key="option+index"
+               @click="selectOption(option, index)"
+               :class="!option.selectedValue ? 'option': 'option option-plus' ">
+            {{ option.value }}
           </div>
         </div>
       </div>
     </div>
-  </label>
+  </div>
 </template>
 
 <script>
 export default {
-  name: "my-select",
+  name: "MySelect",
 
   props: {
-    modelValue: String,
-    title: {},
-    dataForSelect: Array,
+    modelValue: {type: String || Number},
+    placeholder: {default: ''},
+    optionData: {type: Array, required: true},
     disabled: Boolean,
   },
-  emits: ['update:modelValue'],
-
   data() {
     return {
       isOpenSelect: false,
       options: [],
-      myChoice: {},
-      myPreviousChoice: {},
-      arrowDirectionUp: false,
+      choice: {},
+      previousChoice: {},
+      firstModel: this.modelValue,
     }
   },
   methods: {
     toggleDropdown() {
-      this.isOpenSelect = !this.isOpenSelect;
-      this.arrowDirectionUp = !this.arrowDirectionUp
+      if (!this.disabled) this.isOpenSelect = !this.isOpenSelect;
     },
     closeDropdown() {
       this.isOpenSelect = false;
-      this.arrowDirectionUp = false
     },
     selectOption(option, index) {
-      this.options[this.myPreviousChoice.index].selectedValue = false
+      this.options[this.previousChoice.index].selectedValue = false
       this.options[index].selectedValue = true
-      this.myChoice = {...option, selectedValue: true}
-      this.myPreviousChoice = {...this.myChoice, index}
-      this.updateInput(this.myChoice.value)
+      this.choice = {...option, selectedValue: true}
+      this.previousChoice = {...this.choice, index}
+      this.updateInput(this.choice.value)
     },
     updateInput(value) {
-      this.$emit("update:modelValue", value)
+      this.$emit("update:modelValue", value);
+    },
+    getPlaceholder() {
+      let value = this.modelValue, placeholder = this.placeholder
+      if (!this.modelValue && this.modelValue === '' ||
+          typeof (this.modelValue) !== "string" &&
+          typeof (this.modelValue) !== "number") {
+        value = ''
+      }
+      if (!this.placeholder || typeof (this.placeholder) !== "string" && typeof (this.placeholder) !== "number") {
+        placeholder = 'Выберите из списка'
+      }
+      if (value) placeholder = value
+      if (this.disabled) placeholder = value
+      return placeholder;
+    },
+  },
+  computed: {
+    viewPlaceholder() {
+      debugger
+      const value = this.getPlaceholder()
+      let choiceAppearance
+      if (this.disabled) choiceAppearance = ''
+      else {
+        if (this.modelValue) {
+          if (value !== this.firstModel && this.firstModel === this.modelValue) choiceAppearance = 'choice-empty'
+          else choiceAppearance = 'choice'
+        } else if (value === this.choice.value) choiceAppearance = 'choice-empty'
+        else choiceAppearance = 'choice'
+      }
+      return choiceAppearance
     }
   },
+
   mounted() {
-    this.dataForSelect.forEach(element => {
-      let selectedValue = (element === this.title)
-      this.options.push({value: element, selectedValue})
+    const placeholder = this.getPlaceholder()
+    this.optionData.length && this.optionData.forEach(element => {
+      if (typeof (element) !== "string" && typeof (element) !== "number") {
+        element = ''
+      }
+      const selectedValue = element === placeholder;
+      element && this.options.push({value: element, selectedValue})
     })
-    let myChoice, myChoiceIndex;
-    myChoice = this.options.filter((element, index) => {
-      element.selectedValue && (myChoiceIndex = index)
-      return element.selectedValue === true
+    let choiceIndex = 0;
+    const choice = this.options.length && this.options.filter((el, index) => {
+      if (el.selectedValue) choiceIndex = index
+      return el.selectedValue
     })
-    this.myChoice = myChoice[0] ? myChoice[0]
-        : {value: this.title.toString(), selectedValue: true}
-    myChoiceIndex===undefined && (myChoiceIndex=0)
-    this.myPreviousChoice = {...this.myChoice, index: myChoiceIndex}
+    this.choice = choice[0]
+        ? choice[0]
+        : {value: placeholder, selectedValue: false}
+    this.previousChoice = {...this.choice, index: choiceIndex}
   }
 }
 </script>
 
-<style>
+<style scoped>
+.wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
 .dropdown {
-  width: 394px;
-  height: auto;
-  left: -7px;
+  box-sizing: border-box;
   position: relative;
   display: flex;
   flex-direction: column;
+  color: #606266;
+  cursor: pointer;
+  border: 1px solid #dcdfe6;
+  line-height: 1.2;
+  font-size: 1rem;
+  border-radius: 4px;
+  padding: 10px 25px 10px 10px;
 }
 
 .dropdown-disabled {
-  width: 394px;
-  height: auto;
-  left: -7px;
-  position: relative;
-  display: flex;
-  flex-direction: column;
   cursor: not-allowed;
+  color: black;
+  background-color: #f5f7fa;
 }
 
-.choice {
-  display: flex;
-  flex-direction: row;
-  border: 1px solid #DCDFE6;
-  border-radius: 4px;
-  height: auto;
-  margin: 0 7px 0 7px;
-}
-
-.choice:hover {
+.dropdown:hover {
   border: 1px solid #b4bccc;
   transition: all 500ms ease;
 }
 
-.choice-value {
-  flex-basis: 350px;
-  height: auto;
-  color: #606266;
-  text-align: start;
-  font-size: 14px;
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  border-radius: 4px;
-  line-height: 1.2;
-  padding: 10px;
+.dropdown:focus {
+  border-color: #409eff;
 }
 
-.choice-select {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: auto;
-  border-radius: 5px;
-  flex-basis: auto;
+.choice {
+  color: #7272e5;
+}
+
+.choice-empty {
+  color: #c1c1c5;
 }
 
 .arrow-up {
+  display: inline-block;
   width: 10px;
-  background-color: #FFF;
-  padding: 5px;
-  position: relative;
-  border-radius: 5px;
-}
-
-.arrow-up::before, .arrow-up::after {
-  content: '';
+  height: 10px;
   position: absolute;
-  left: 0;
-  top: -5px;
-  border: 7px solid transparent;
-  border-bottom: 7px solid #C0C4CC;;
-}
-
-.arrow-up::after {
-  border-bottom: 7px solid #FFF;
-  top: -3px;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%) rotate(45deg);
+  border-bottom: 2px solid #c0c4cc;
+  border-right: 2px solid #c0c4cc;
 }
 
 .arrow-down {
-  width: 10px;
-  background-color: #FFF;
-  padding: 5px;
+  transform: rotate(225deg);
+}
+
+.options {
   position: relative;
-  border-radius: 5px;
-}
-
-.arrow-down::before, .arrow-down::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 5px;
-  border: 7px solid transparent;
-  border-top: 7px solid #C0C4CC;;
-}
-
-.arrow-down::after {
-  border-top: 7px solid #FFF;
-  top: 3px;
-}
-
-.arrow-down-disabled {
-  width: 10px;
-  padding: 5px;
-  position: relative;
-  border-radius: 5px;
-}
-
-.arrow-down-disabled::before, .arrow-down-disabled::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 5px;
-  border: 7px solid transparent;
-  border-top: 7px solid #C0C4CC;
-}
-
-.arrow-down-disabled::after {
-  border-top: 7px solid #F5F7FA;
-  top: 3px;
+  height: 0;
 }
 
 .options-visible {
-  overflow: hidden;
+  z-index: 3;
   border-radius: 4px;
-  height: auto;
   visibility: visible;
   opacity: 1;
   transition: visibility 0.3s linear, opacity 0.3s linear;
 }
 
 .options-hidden {
+  z-index: 3;
   visibility: hidden;
   opacity: 0;
   transition: visibility 0.3s linear, opacity 0.3s linear;
@@ -249,21 +197,16 @@ export default {
 .select-options {
   border: 1px solid #E4E7ED;
   border-radius: 4px;
-  padding: 5px 1px;
+  padding: 5px 0;
   box-shadow: 0 2px 12px 0 rgb(0 0 0 / 10%);
 }
 
 .option {
-  width: auto;
-  height: auto;
   white-space: normal;
   color: #606266;
-  text-align: left;
   line-height: 1.2;
-  display: flex;
-  align-items: center;
   cursor: pointer;
-  font-family: "Times New Roman";
+  font-size: 0.85rem;
   padding: 6px 10px;
 }
 
@@ -272,32 +215,14 @@ export default {
 }
 
 .option-plus {
-  width: auto;
-  height: auto;
-  white-space: normal;
   color: #409EFF;
-  font-size: 14px;
-  font-family: "Times New Roman";
   font-weight: 700;
-  text-align: left;
-  line-height: 1.2;
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  padding: 6px 10px;
-}
-
-.option-plus:hover {
-  background: #F5F7FA;
 }
 
 .block-triangle {
-  padding: 12px 7px 7px 7px;
-  background-color: #FFF;
-  /*position: relative;*/
-  text-align: left;
   position: absolute;
-  z-index: 3;
+  padding-top: 12px;
+  background-color: #FFF;
 }
 
 .block-triangle::before, .block-triangle::after {
