@@ -1,7 +1,7 @@
 <template>
   <div class="wrapper">
     <div class="dropdown"
-         :class="{ 'dropdown-disabled': disabled}"
+         :class="{'dropdown-disabled': disabled}"
          tabindex="0"
          ref="dropdown"
          @click="toggleDropdown"
@@ -78,7 +78,6 @@ export default {
   },
   computed: {
     viewPlaceholder() {
-      debugger
       const value = this.getPlaceholder()
       let choiceAppearance
       if (this.disabled) choiceAppearance = ''
@@ -126,6 +125,7 @@ export default {
   position: relative;
   display: flex;
   flex-direction: column;
+  min-height: 35px;
   color: #606266;
   cursor: pointer;
   border: 1px solid #dcdfe6;
